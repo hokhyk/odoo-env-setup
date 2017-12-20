@@ -1,0 +1,15 @@
+xpath grammers:
+
+
+tools:  
+1. xmllint  --xpath
+For these, more complex, XPath expressions, we can explore the correct syntax
+using some command-line tools. The xmllint command-line utility is probably
+already available on your Linux system, and has an --xpath option to perform
+queries on XML files.
+
+2. Another option, providing nicer outputs, is the xpath command from the
+libxml-xpath-perl Debian/Ubuntu package:
+$ sudo apt-get install libxml-xpath-perl
+$ xpath -e "//record[@id='res_partner_kanban_view']" -e
+"//field[@name='display_name']]" /path/to/*.xml

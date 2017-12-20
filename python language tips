@@ -1,0 +1,10 @@
+_ 变量
+在Python中_其实就是一个普通的标识符而已，之所以有这么神奇的效果，是因为交互模式下Python用sys.displayhook这个函数干了一件很好玩的事：如果当前行的值不是None，就把这个值赋给这个_变量。
+这就带来了一个效果，你每输入一个表达式，_这个变量的值都回更新，你在交互模式下打个_实际上就是显示这个变量的值，所以看起来的效果就是这个_命令能回显上一个表达式的值。
+
+
+_ = GettextAlias()
+
+
+By default Odoo's POT export only extracts labels inside XML files or inside field definitions in Python code, but any Python string can be translated this way by surrounding it with the function odoo._() (e.g. _("Label"))
+

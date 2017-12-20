@@ -1,0 +1,19 @@
+    if manifest_file:
+        # default values for descriptor
+        info = {
+            'application': False,
+            'author': 'Odoo S.A.',
+            'auto_install': False,
+            'category': 'Uncategorized',
+            'depends': [],
+            'description': '',
+            'icon': get_module_icon(module),
+            'installable': True,
+            'license': 'LGPL-3',
+            'post_load': None,
+            'version': '1.0',
+            'web': False,
+            'website': 'https://www.odoo.com',
+            'sequence': 100,
+            'summary': '',
+        }

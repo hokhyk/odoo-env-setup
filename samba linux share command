@@ -1,0 +1,4 @@
+ 
+smbclient -L 192.168.0.37
+
+ sudo mount -t cifs -o username=vagrant,password=vagrant //192.168.0.37/share  /home/vagrant/share/Odoo/odoosamba/

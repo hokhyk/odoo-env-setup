@@ -1,0 +1,652 @@
+It is also noteworthy that some characters are not allowed inside expressions.
+The lower than sign ( < ) is such a case. This is because of the XML standard,
+where such characters have special meaning and shouldn't be used on the XML
+content. A negated >= is a valid alternative, but the common practice is to use
+the following alternative symbols that are available for inequality operations:
+lt is for less than
+lte is for less than or equal to
+gt is for greater than
+gte is for greater than or equal to
+
+在OpenERP中，通过QWeb来对模板进行渲染后加载到浏览器中，而模板中有许多的标签来定制各种需求变化，在这里记录学习过程中碰到的标签定义，以方便查询。
+
+模板中的标签统一都是以"t-"开始的。
+
+t-name 用于指明模板的名称
+t-extend 用于指明该模板是继承自另外哪一个模板，后面会带父模板的名称，如：t-extend=“Login"
+t-jQuery 一个jquery的选择器，后面指明选择器的定义，如：t-jquery=".oe_logiin"
+t-operation 一般跟在t-jquery后面，指明选择器找到元素后执行的动作，其值有：append(追加)、replace(替换)
+t-if 用于指明元素在页面产生的条件，后面是带一个JavaScript的表达式，返回True或False
+t-att-### 用于指明一个元素的属性值，###是元素的属性名称，如：t-att-value="javascript表达式"
+t-foreach 用于指明一个循环调用，后面一般带的是一个数组
+t-as 用于取得循环中的单个值，与t-foreach搭配使用，后面带的是一个变量名，可以循环中使用变量取值
+
+t-esc 用于一个文字输出
+t-call 用于调用另外模板，后面带一个模板的名称
+
+t-set 用于设定一个变量，后面带变量的名称，一般跟t-value搭配使用
+
+t-value 用于指定某个变量或元素的值
+
+
+
+
+
+
+1.web 模块
+注意，OpenERP 模块中 web 部分用到的所有文件必须被放置在模块内的 static 文件夹里。这是强制性的，出于安全考虑。
+
+事实上，我们创建的文件夹 CSS，js 和 XML，仅仅是一个习惯。
+
+static文件夹
+
+oepetstore/static/css/petstore.css 是我们的 CSS 文件。
+
+oepetstore/static/xml/petstore.xml 是一个 XML 文件，将包含我们 QWeb 的模板。
+
+oepetstore/static/js/petstore.js包含应用程序的JavaScript 代码。
+
+像 OpenERP 的 XML 文件包含了视图或数据一样，必须在__openerp__.py文件内标明这些文件。下面是我们增加的行，它告诉 web client 必须记载这些文件：
+
+'js': ['static/src/js/*.js'],
+
+'css': ['static/src/css/*.css'],
+
+'qweb': ['static/src/xml/*.xml'],
+OpenERP内，默认会把所有的 javascript 文件连接为一个文件。然后，我们执行一个叫 minification的操作。
+
+minification 将移除文件中的所有的注释、空格和换行符。最后，发送这个文件给用户浏览器。
+
+但这么做的缺点，是无法调试应用程序。为了避免这种副作用，仍然能够调试的解决办法是：在 OpenERP 的 URL 后面添加一个参数 ?debug .
+
+添加后的URL：http://localhost:8069/?debug
+
+当您使用带 debug 参数的 URL，应用程序将不会执行串联所有 minification的 JavaScript 文件这个过程。应用程序也将需要更多的时间来加载，但你能进
+
+行调试开发了。
+
+在前面的章节中，我们解释了 JavaScript 缺少命名空间机制，来分割在不同的 JavaScript 文件中声明的变量。并且我们提出了模块模式这个简单方法。
+
+模块模式（如 app.js文件）：
+
+(function() {
+
+app = {};
+
+function main() {
+
+console.log("launch application");
+
+};
+
+app.main = main;
+
+})();
+在 OpenERP 的 web 框架内，有个类似于模块模式的等价物，集成了该框架的其余部分。请注意，OpenERP 的 Web 模块与其他 OpenERP 的 addon 模块概念上是不同的，一个 addon 模块是一个包含很多文件的文件夹，web 模块仅仅是一个有命名空间概念的 JavaScript。
+
+1)模块
+
+oepetstore/static/js/petstore.js 声明了这样的模块:
+
+openerp.oepetstore=function(instance){
+
+instance.oepetstore={};
+
+instance.oepetstore.XXX=......;
+
+}
+
+在OpenERP的Web框架内，通过声明一个函数来声明一个 JavaScript 模块，并把这个函数放在全局变量openerp的属性内.这个属性名称必须和OpenERP addon 模块名称一致 （这 addon 模块名为 oepetstore，我应把函数赋值给openerp.oepetstore属性。如果换成openerp.petstore属性，则无法正常运行）。当 Web 客户端转载这个 addon 模块时，该函数将被调用。将传入一个名为instance的参数，这个参数代表当前 OpenERP 的 Web 客户端实例， 包含了所有相关当前会话数据，以及所有 Web 模块的变量。
+
+在 instance 对象内创建与 addon 模块名称一致的新命名空间是个惯例。这就是为什么我们在 instance.oepetstore 设置一个空 dictionary。这个 dictionary就是命名空间，用来声明我们模块内自己使用的所有类和变量。
+
+2）类
+
+JavaScript 不像其他面向对象编程语言那样有类机制。更确切地说，它提供了面向对象编程语言元素，但你必须自己定义，自己选择如何做。
+
+OpenERP Web 框架提供工具来简化这个过程，让程序员以类似其他编程语言，如 Java 的方式编码。
+
+定义一个新类，你需要从 instance.web.Class 类继承。语法如下：
+
+instance.oepetstore.MyClass = instance.web.Class.extend({
+
+say_hello: function() {
+
+console.log("hello");
+
+},
+
+});
+类的实例化：
+
+var my_object = new instance.oepetstore.MyClass();
+
+my_object.say_hello();
+
+类可以有一个构造函数，它方法名为 init()。你可以像大多数开发语言那样，传递参数给构造器：
+
+instance.oepetstore.MyClass = instance.web.Class.extend({
+
+init: function(name) {
+
+this.name = name;
+
+},
+
+say_hello: function() {
+
+console.log("hello", this.name);
+
+},
+
+});
+类的继承
+
+类可以被继承
+
+instance.oepetstore.MySpanishClass = instance.oepetstore.MyClass.extend({
+
+say_hello: function() {
+
+this._super();
+
+console.log("hola", this.name);
+
+},
+
+});
+
+var my_object = new instance.oepetstore.MySpanishClass("Nicolas");
+my_object.say_hello();
+
+this._super()不是常用的类方法
+
+3）Widgets Basics（基础部件）
+
+OpenERP中Widget部件，是一个通用组件，专门用来向用户显示内容。
+
+oepetstore实例中的petstore.js内容：
+
+openerp.oepetstore=function(instance){
+
+var _t=instance.web._t,
+
+_lt=instance.web._lt;
+
+var QWeb=instance.web.qweb;
+
+
+instance.oepetstore={};
+
+<!--部件-->
+
+instance.oepetstore.HomePage=instance.web.Widget.extend({
+
+start:function(){
+
+console.log("pet store home page loaded");
+
+},
+
+});
+
+
+instance.web.client_actions.add('petstore.homepage','instance.oepetstore.HomePage');
+
+}
+最后一行代码，把这个部件注册为客户端的action。当我们点击‣Pet Store ‣ Pet Store ‣ Home Page菜单项时，客户端action让部件显示出来。
+
+HomePage 部件有一个 start() 方法。 在部件初始化后，这方法被自动调用。它已接接受指令去显示其内容。我们将用它向用户显示一些内容。要做到这一点，我们使用所有部件都有的 $el 属性。该属性是一个 jQuery对象， 表示部件对应的 HTML 标签的根标签。部件包含了多个 HTML 标签，这些 HTM 标签有一个统一的根标签。默认情况下，部件都有一个空的根标签：一个<div>。
+
+一个<div> HTML 标签在没有具体内容的时候，是不可见的。这也解释了为什么显示 instance.oepetstore.HomePage 时， 是个空白区域， 它根本没有任何内容。要想显示些内容，我们用 jquery 该对象上的一些简单方法，在根标签中添加一些 HTML 标签：
+
+instance.oepetstore.HomePage = instance.web.Widget.extend({
+
+start: function() {
+
+this.$el.append("<div>Hello dear OpenERP user!</div>");
+
+},
+
+});
+常用方法：
+
+appendTo()方法
+
+var pettoys = new instance.oepetstore.PetToysList(this);//实例化PetToysList()部件
+
+pettoys.appendTo(this.$(".oe_petstore_homepage_left"));//把pettoys添加到当前部件的class=.oe_petstore_homepage_left的标签中
+注意：new instance.oepetstore.PetToysList(this)，其中参数this，代表调用此部件的实例，表示部件的隶属关系。
+
+addClass( )方法
+
+this.$el.addClass("oe_petstore_homepage");//添加样式
+
+getParent()方法
+
+用于获取父部件
+
+getChildren() 方法
+
+用来获取子部件列表:this.getChildren()[0].$el
+
+当你在部件中重载init()时，必须以父部件作为第一参数传入，并调用传入给this._super(),例如：
+
+instance.oepetstore.GreetingsWidget = instance.web.Widget.extend({
+
+init: function(parent, name) {
+
+this._super(parent);
+
+this.name = name;
+
+},
+
+});
+最后，如果一个部件没有父部件（即：在你的应用实例化时是第一个部件），传入 null 参数：
+
+new instance.oepetstore.GreetingsWidget(null);
+
+销毁部件：
+
+destroy()方法：
+
+当一个部件被销毁，它会先调用所有子部件的destroy()。然后，它在DOM中清楚自己。通过部件隶属关系的递归调用，避免了内存泄漏，这对容易产生内
+
+存泄露的大型JavaScript应用程序来说是非常有用的。
+
+
+2.Qweb
+
+在 OpenERP 中，使用Qweb模板引擎，专门用于Web 客户端开发。
+
+Qweb 是一种基于XML的模板语言，类似Genshi，Thymeleaf 或 Facelets。
+
+有如下几个特点：
+
+① 在浏览器中完全用 JavaScript 执行。
+
+② 每个模板文件（XML 文件）包含了多个模板，而其他模板引擎通常做法是，模板文件和模板之间 1:1 的关系。
+
+③ 在 OpenERP 的 Web 的 instance.web.Widget 特别支持了 QWeb。虽然QWeb 可以用于 OpenERP 的 Web 客户端以外的地方（同时instance.web.Widget 也可以不依赖于 Qweb）。
+
+之所以没用用其他 JavaScript 模板引擎，而是选择了 QWeb， 是因为 QWeb的扩展机制与 OpenERP 的视图继承机制很相似。就像 OpenERP 的视图一样，QWeb 模版也是个 XML 树结构，因此很容易在模版执行 XPath 或 DOM 操作。
+
+在部件内使用 QWeb
+
+首先，在文件 oepetstore/static/src/xml/petstore.xml 里我们定义一个简单的QWeb 模板。
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<templates xml:space="preserve"> 
+<t t-name="HomePageTemplate">
+
+<div style="background-color: red;">This is some simple HTML</div>
+
+</t>
+
+</templates> 
+现在，修改HomePage类： 
+var QWeb = instance.web.qweb;
+
+我们建议在所有的 OpenERP web 模块复制粘贴这行代码。这个对象提供访问被Web客户端加载的所有模版文件中的模版的功能。下面是我们使用XML模板文件定义的模版的例子：
+instance.oepetstore.HomePage = instance.web.Widget.extend({
+
+start: function() {
+
+this.$el.append(QWeb.render("HomePageTemplate"));
+
+},
+
+});
+
+解释：QWeb.render()方法用来渲染指定标识名称的具体模版，第一个参数就是模版标识名称。
+
+另外一个常用地方是，在部件内集成 Qweb：
+
+instance.oepetstore.HomePage = instance.web.Widget.extend({
+
+template: "HomePageTemplate",
+
+start: function() {
+
+...
+
+},
+
+});
+
+当你在部件内设置类属性 template 时，部件就知道它需要调用 QWeb.render()来呈现该模板。
+
+请注意这两个语法是有区别的。当在部件内集成 Qweb 时， QWeb.render() 调用在部件调用 start() 之前发生，并用模版的根标签替换了部件的默认根标签。这会导致不同的结果，所以你应该记住它。
+
+Qweb 上下文（Context）
+
+像所有的模板引擎一样， Qweb 模板可以包含操纵传递给模板的数据的代码。
+
+1）使用QWeb.render()的第二个参数传递数据给模版：
+
+<t t-name="HomePageTemplate">
+
+<div>Hello <t t-esc="name"/></div>
+
+</t>
+QWeb.render("HomePageTemplate", {name: "Nicolas"});
+
+输出结果： <div>Hello Nicolas</div>
+
+2）当部件整合 QWeb 时，就不能直接传入数据了。 替换办法是，模板有一个唯一变量 widget ，这个变量引用了当前部件：
+
+<t t-name="HomePageTemplate">
+
+<div>Hello <t t-esc="name"/></div>
+
+</t>
+instance.oepetstore.HomePage = instance.web.Widget.extend({
+
+template: "HomePageTemplate",
+
+init: function(parent) {
+
+this._super(parent);
+
+this.name = "Nicolas";
+
+},
+
+start: function() {
+
+},
+
+});
+
+输出结果： <div>Hello Nicolas</div>
+
+模版声明
+
+Qweb 的语法：
+
+Qweb 指令使用前缀 t- 的 XML 属性来声明新模板，我们在 XML 文件的根元素 <template> 内添加一个 <t t-name="..."> 元素：
+
+<templates>
+
+<t t-name="HomePageTemplate"> 
+<div>This is some simple HTML</div> 
+</t>
+</templates>
+
+Escaping————转义
+
+用 t-esc :在 HTML 中放置文本
+
+<t t-name="HomePageTemplate">
+
+<div>Hello <t t-esc="name"/></div>
+
+</t>
+这将输出变量 name ，并转义变量的上下文，这上下文也许是类似 HTML的字符串。请注意，该属性 t-esc 可包含各种 JavaScript 表达式：
+
+<t t-name="HomePageTemplate">
+
+<div><t t-esc="3+5"/></div>
+
+</t>
+输出HTML
+
+如果你明确知道变量会包含一些 HTML 标签，使用 t-raw 代替的 t-esc ：
+
+<t t-name="HomePageTemplate">
+
+<div><t t-raw="some_html"/></div>
+
+</t>
+
+条件
+
+QWeb 的条件关键字是 t-if ：
+
+<t t-name="HomePageTemplate">
+
+<div>
+
+<t t-if="true == true">
+
+true is true
+
+</t>
+
+<t t-if="true == false">
+
+true is not true
+
+</t>
+
+</div>
+
+</t>
+Qweb 条件分支没有“else”这个分支结构。
+
+循环
+
+遍历列表，使用 t-foreach 和 t-as
+
+<t t-name="HomePageTemplate">
+
+<div>
+
+<t t-foreach="names" t-as="name">
+
+<div>
+
+Hello <t t-esc="name"/>
+
+</div>
+
+</t>
+
+</div>
+
+</t>
+设置任意XML属性值
+
+Qweb 有一个特定语法设置属性值。您必须使用 t-att-xxx 并用属性名替换xxx：
+
+<t t-name="HomePageTemplate">
+
+<div>
+
+Input your name:
+
+<input type="text" t-att-value="defaultName"/>
+
+</div>
+
+</t>
+
+
+3. 部件事件和属性
+1）事件
+
+部件类似现有大部分图形用户界面库(Qt, GTK, Swing,...)那样，触发事件，
+
+处理事件。例如：
+instance.oepetstore.ConfirmWidget = instance.web.Widget.extend({
+
+start: function() {
+
+var self = this;
+
+this.$el.append("<div>Are you sure you want to perform this action?</div>" +
+
+"<button class='ok_button'>Ok</button>" +
+
+"<button class='cancel_button'>Cancel</button>");
+
+this.$el.find("button.ok_button").click(function() {
+
+self.trigger("user_choose", true);
+
+});
+
+this.$el.find("button.cancel_button").click(function() {
+
+self.trigger("user_choose", false);
+
+});
+
+},
+
+});
+
+instance.oepetstore.HomePage = instance.web.Widget.extend({
+
+start: function() {
+
+var widget = new instance.oepetstore.ConfirmWidget(this);
+
+widget.on("user_choose", this, this.user_choose);
+
+widget.appendTo(this.$el);
+
+},
+
+user_choose: function(confirm) {
+
+if (confirm) {
+
+console.log("The user agreed to continue");
+
+} else {
+
+console.log("The user refused to continue");
+
+}
+
+},
+
+});
+
+注意：var self = this;请记住，在 JavaScript 中，变量 this 会隐含传递给所有函数。如果函数像对象引用方法那么用，通过 this 我们知道当前的对象是什么。每个已声明的函数都有自己的 this。所以，当我们在一个函数内声明了另一个函数，这个新功能将有自己的 this ，这和父函数 this 含义不同。如果我们要用原来的对象 this ，最简单的方法是把引用存储在一个本地变量。在 OpenERP 内，按照 Python 的习惯，通常该变量命名为 self。
+由于这个部件应该是通用的，它本身不应执行任何具体 action。所以，我们用 trigger() 方法设置了名字叫"user_choose"的触发器和事件。
+
+Widget.trigger(event_name [ , ...]) 方法的第一个参数是待触发的事件名，也接受任何数量的其他参数。这些参数将被传递到所有的事件侦听器。
+
+然后，我们修改部件HomePage去实例化一个部件ConfirmWidget，通过on( )方法监听"user_choose"事件。Widget.on(event_name,object, func) 允许绑定一个事件 event_name 触发时调用的函数func。如果func是个方法，则object是func函数的引用关联对象。当func被调用时，trigger()的其他参数会传递给它。例如：
+
+start: function() {
+
+var widget = ...
+
+widget.on("my_event", this, this.my_event_triggered);
+
+widget.trigger("my_event", 1, 2, 3);
+
+},
+
+my_event_triggered: function(a, b, c) {
+
+console.log(a, b, c);
+
+// will print "1 2 3"
+
+}
+
+2）属性
+
+属性类似与普通对象的属性。可以在对象上设置数据，但有个额外的功能：属性值改变时将触发事件。
+
+start: function() {
+
+this.widget = ...
+
+this.widget.on("change:name", this, this.name_changed);
+
+this.widget.set("name", "Nicolas");
+
+},
+
+name_changed: function() {
+
+console.log("The new value of the property 'name' is", this.widget.get("name"));
+
+}
+
+Widget.set(name,value) 方法设置某个属性的值。如果该值改变（或以前没有值），对象将触发一个事件change:xxx。xxx 是属性名称。
+
+
+4.部件辅助工具
+1）部件的 jQeruy 选择器
+
+find() 方法
+
+this.$el.find("input.my_input")
+
+$()方法
+
+this.$("input.my_input")
+
+说明：我们强烈建议你也不要使用，全局 jQuery函数$()。这种全局选择器满足简单应用，但在真正的大型 web 应用程序中不好。原因很简单：当你创建一个新部件，你永远不知道它会实例化多少次。由于 $() 全局函数是操作浏览器中的全部 HTML，如果你实例化一个部件两次，该函数会搞混两个部件的个内容。这就是为什么，大部分时间里，你在定位部件里的 HTML 时，必须限制 jQuery 选择器的选择范围。
+
+出于同样的逻辑，你也可以猜测到，不能够在部件里使用 HTML id。如果widget 被实例化的两次，在应用程序里将有两个相同 id，但却是不同的 HTML元素的情况。而这本身就是一个错误。所以， 在所有的情况下，你应该坚持使用用 CSS 类去标记 HTML 标签。
+
+2） 简易 DOM 事件绑定
+
+在前面的一部分，我们必须用 click() 或 change() 等事件绑定 HTML 元素。现在，我们用 $() 来简化代码，让我们看看如何做：
+
+instance.oepetstore.MyWidget = instance.web.Widget.extend({
+
+start: function() {
+
+var self = this;
+
+this.$(".my_button").click(function() {
+
+self.button_clicked();
+
+});
+
+},
+
+button_clicked: function() {
+
+..
+
+},
+
+});
+
+还有有一个更简单的语法：
+
+instance.oepetstore.MyWidget = instance.web.Widget.extend({
+
+events: {
+
+"click .my_button": "button_clicked",
+
+},
+
+button_clicked: function() {
+
+...
+
+}
+
+}); 把在DOM上触发的jQuery事件和部件的事件区分开很重要。event类属性是一个“助手”，协助绑定jQuery 的事件，它与部件事件无关，部件事件通过on()方法绑定。
+event类属性是一个dictionary，dictionary的key是空格隔开成两个部分的字符串。第一部分是事件的名称，第二个是jQuery选择器。所以key click.my_button将绑定在所有CSS类名为“my_button”的HTML标签的 click事件上。dictionary的value值是对象内被调用的方法名称。
+
+5.开发指南
+
+遵循原则：
+
+1）标识符（id属性），应尽量避免使用。在通用的应用程序和模块里，id限制了组件的可复用性，往往使代码更加脆弱。几乎所有时候，id可为空，使用 CSS类或保留一个DOM节点引用，或嵌套在一个jQuery的元素内去引用。
+
+如果绝对必要使用id（因为第三方库需要，并且无法获取一个DOM元素），应该用_.uniqueId()生成。
+
+2）避免可预见/常见的CSS类名。CSS 类名，如content或navigation能与想要表达的意思/语义匹配。但其他开发人员将有同样想法，从而发生命名冲突和意外行为。例如，通用类名的前缀应该是他们属于的组件的名称（就像在C或Objective-C语言，创建“非正式”命名空间）。
+
+3）应避免用全局选择器。因为在单个页面内，一个部件可以多次使用（一个例子是OpenERP的仪表板），选择范围应限制在一个给定的组件的范围。未过滤的选择，如$(selector) or document.querySelectorAll(selector) 通常会导致意外或不正确的行为。OpenERPWeb的部件有个提供 DOM 根标签的属性的( Widget.$el )和一个快捷直接选择节点的( Widget.$())。
+
+4)更一般的是，永远不要假设你自己的组件拥有或能够控制任何超出自己的$el。
+
+5)除非绝对是微不足道的，应该使用 QWeb 进行HTML模板和渲染。
+
+6)所有交互式组件（屏幕上显示信息的组件、或拦截DOM事件的组件）都必须继承自部件，正确的执行、使用它的API，符合生命周期。
