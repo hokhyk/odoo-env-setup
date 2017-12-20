@@ -1,0 +1,11 @@
+ 
+sudo mount -t cifs -o username=vagrant,password=vagrant //192.168.0.37/share /home/vagrant/share/Odoo/odoosamba/
+
+
+
+#setting up samba service in opensue:
+1. using yast ->  network services  ->  Samba Server
+2. add a directory to share.
+3. sudo su
+4. smbpasswd -a vagrant  
+5. input user vagrant's password as vagrant.
