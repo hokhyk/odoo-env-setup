@@ -134,42 +134,90 @@ $ sudo chown www-data:root * # access only to www-data group
 
 $ vi /etc/nginx/sites-available/odoo
 upstream backend-odoo {
-   server 127.0.0.1:8069;
+   	server 127.0.0.1:8069;
+}
+
+upstream backend-odoo-im { server 127.0.0.1:8072; }
+
+server {
+	  listen 80;
+	  server_name 118.190.201.241;
+	  add_header Strict-Transport-Security max-age=2592000;
+	#  rewrite ^/.*$ https://$host$request_uri? permanent;
+	  return 301 https://$server_name$request_uri;
+	#  rewrite ^/(.*)$ https://$server_name$request_uri? permanent;
 }
 
 server {
-  listen 80;
-  server_name 118.190.201.241;
-  add_header Strict-Transport-Security max-age=2592000;
-#  rewrite ^/.*$ https://$host$request_uri? permanent;
-  return 301 https://$server_name$request_uri;
-#  rewrite ^/(.*)$ https://$server_name$request_uri? permanent;
-}
+	  listen 443;
+	  server_name 118.190.201.241;
+	# ssl settings
+	  ssl on;
+	  ssl_certificate /etc/nginx/ssl/cert.pem;
+	  ssl_certificate_key /etc/nginx/ssl/key.pem;
+	  keepalive_timeout 60;
+	# proxy header and settings
+	  proxy_set_header Host $host;
+	  proxy_set_header X-Real-IP $remote_addr;
+	  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	  proxy_set_header X-Forwarded-Proto $scheme;
+	  proxy_redirect off;
 
-server {
-  listen 443;
-  server_name 118.190.201.241;
-# ssl settings
-  ssl on;
-  ssl_certificate /etc/nginx/ssl/cert.pem;
-  ssl_certificate_key /etc/nginx/ssl/key.pem;
-  keepalive_timeout 60;
-# proxy header and settings
-  proxy_set_header Host $host;
-  proxy_set_header X-Real-IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
-  proxy_redirect off;
+	# odoo log files
+	access_log /var/log/nginx/odoo-access.log;
+	error_log /var/log/nginx/odoo-error.log;
+	# increase proxy buffer size
+	proxy_buffers 16 64k;
+	proxy_buffer_size 128k;
+	# force timeouts if the backend dies
+	proxy_next_upstream error timeout invalid_header http_500
+	http_502 http_503;
+	# enable data compression
+	gzip on;
+	gzip_min_length 1100;
+	gzip_buffers 4 32k;
+	gzip_types text/plain text/xml text/css text/less
+	application/x-javascript application/xml application/json
+	application/javascript;
+	gzip_vary on;
 
- location / {
-    proxy_pass http://backend-odoo;
-  }
+
+	location / {
+	   proxy_pass http://backend-odoo;
+	}
+
+	location ~* /web/static/ {
+	# cache static data
+	proxy_cache_valid 200 60m;
+	proxy_buffering on;
+	expires 864000;
+	proxy_pass http://backend-odoo;
+	}
+
+	location /longpolling { proxy_pass http://backend-odoo-im;}
 }
 
 
 $sudo nginx -t
 $ sudo /etc/init.d/nginx reload
 
+## 5. server and module updates
+### database backup, then swap odoo server to odoo-stage database and serving on 8080. 
+#### way 1:
+$ dropdb odoo-stage; createdb odoo-stage
+$ pg_dump odoo-prod | psql -d odoo-stage
+$ sudo su odoo
+#### way 2:
+$ createdb --template odoo-prod odoo-stage
+
+#### finally:
+$ cd ~/.local/share/Odoo/filestore/
+$ cp -al odoo-prod odoo-stage
+$ ~/odoo-10.0/odoo-bin -d odoo-stage --xmlrpc-port=8080 -c /etc/odoo/odoo.conf
+$ exit
+
+### then perform the updates on the original odoo server.
+using git or just copying updated source files to the server directories.
 
 
 
