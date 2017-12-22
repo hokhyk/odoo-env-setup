@@ -1,13 +1,13 @@
 # source code installation:
 ## 1.  installing dependencies:
 $sudo apt-get update
-$sudo apt-get update -y
+$sudo apt-get upgrade -y
 
 $sudo apt-get install postgresql -y
-$sudo su -c "createuser -s $(whoami)" 
+$sudo su -c "createuser -s $(whoami)" postgres
 
 $sudo apt-get install git python-pip python2.7-dev -y
-$sudo apt-get install libxml2-dev libxsltl-dev libevent-dev libsasl2-dev libldap2-dev libpq-dev libpngl2-dev libjpeg-dev poppler-utils node-less node-clean-css -y
+$sudo apt-get install libxml2-dev libxslt1-dev libevent-dev libsasl2-dev libldap2-dev libpq-dev libpng12-dev libjpeg-dev poppler-utils node-less node-clean-css -y
 
 $wget http://nightly.odoo.com/extra/wkhtmltox-0.12.1.2_linuxjessie-amd64.deb
 $sudo dpkg -i wkhtmltox-0.12.1.2_linux-jessie-amd64.deb
@@ -19,7 +19,7 @@ $sudo -H pip install -r requirements.txt
 
 ## 2. install Odoo
 $ sudo adduser --disabled-password --gecos "Odoo" odoo
-$ sudo su -c "createuser odoo" 
+$ sudo su -c "createuser odoo" postgres
 $ createdb --owner=odoo odoo-prod
 
 ### installing from Odoo source code
