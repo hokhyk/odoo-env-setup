@@ -6,6 +6,12 @@ $sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev l
 
 $ curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 
+$echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile  
+$echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+$echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+$exec $SHELL
+source ~/.bash_profile
+
 pyenv install --list
 pyenv versions
 which python

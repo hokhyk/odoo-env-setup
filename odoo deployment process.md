@@ -26,6 +26,7 @@ $ createdb --owner=odoo odoo-prod
 $ sudo su odoo
 $ git clone https://github.com/odoo/odoo.git /home/odoo/odoo-10.0 -b 10.0 --depth=1
 
+ # $ wget https://bootstrap.pypa.io/ez_setup.py -O - |sudo  python
 $/home/odoo/odoo-10.0/odoo-bin --help
 $exit
 
