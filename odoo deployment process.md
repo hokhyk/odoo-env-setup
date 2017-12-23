@@ -5,6 +5,10 @@ $sudo apt-get upgrade -y
 
 $sudo apt-get install postgresql -y
 $sudo su -c "createuser -s $(whoami)" postgres
+$ sudo adduser --disabled-password --gecos "Odoo" odoo
+$ sudo su -c "createuser odoo" postgres
+$ createdb --owner=odoo odoo-prod
+$ sudo su odoo
 
 $sudo apt-get install git python-pip python2.7-dev -y
 $sudo apt-get install libxml2-dev libxslt1-dev libevent-dev libsasl2-dev libldap2-dev libpq-dev libpng12-dev libjpeg-dev poppler-utils node-less node-clean-css -y
@@ -13,17 +17,27 @@ $wget http://nightly.odoo.com/extra/wkhtmltox-0.12.1.2_linuxjessie-amd64.deb
 $sudo dpkg -i wkhtmltox-0.12.1.2_linux-jessie-amd64.deb
 $sudo apt-get -fy install
 
-$sudo -H pip install --upgrade pip
+$sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm
+
+$ curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+$echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile  
+$echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+$echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+$exec $SHELL
+$source ~/.bash_profile
+$ pyenv install -v 2.7.9
+$pyenv rehash
+$ pyenv virtualenv 2.7.9 2.7.9env
+$ pyenv activate 2.7.9env
+
+#$sudo -H pip install --upgrade pip
+install --upgrade pip
 $wget https://raw.githubusercontent.com/odoo/odoo/10.0/requirements.txt
-$sudo -H pip install -r requirements.txt
-
+#$sudo -H pip install -r requirements.txt
+pip install -r requirements.txt
 ## 2. install Odoo
-$ sudo adduser --disabled-password --gecos "Odoo" odoo
-$ sudo su -c "createuser odoo" postgres
-$ createdb --owner=odoo odoo-prod
-
 ### installing from Odoo source code
-$ sudo su odoo
+#$ sudo su odoo
 $ git clone https://github.com/odoo/odoo.git /home/odoo/odoo-10.0 -b 10.0 --depth=1
 
  # $ wget https://bootstrap.pypa.io/ez_setup.py -O - |sudo  python
