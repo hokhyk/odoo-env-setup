@@ -256,6 +256,13 @@ server {
 	proxy_pass http://backend-odoo;
 	}
 
+	location ~* .(jpg|jpeg|png|ico|css|js|gif)$ {
+	proxy_cache_valid 200 60m;
+	proxy_buffering on;
+	expires 86400;
+	proxy_pass http://odooerp;
+	}
+
 	location /longpolling { proxy_pass http://backend-odoo-im;}
 }
 

@@ -93,7 +93,7 @@ $ pyenv activate 2.7.9env
 echo -e "\n---- Install tool packages ----"
 sudo apt-get install wget git python-pip python-imaging python-setuptools python-dev libxslt-dev libxml2-dev libldap2-dev libsasl2-dev node-less postgresql-server-dev-all -y
 
-pip install watchdog   #for development and debug perpose.
+pip install watchdog   #for development and debug purpose.
 pip install -r requirements.txt
 
 $ sudo apt-get install npm                     # Install NodeJs and its package manager
@@ -133,6 +133,9 @@ $ python odoo-bin -c odoo-server.conf
 
 $ sudo service odoo restart
 
+ default odoo server administrator name and password: admin/admin
+
+http://www.cnblogs.com/ygj0930/p/6866558.html
 
 
 
