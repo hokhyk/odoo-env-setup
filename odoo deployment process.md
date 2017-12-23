@@ -27,14 +27,15 @@ $exec $SHELL
 $source ~/.bash_profile
 $ pyenv install -v 2.7.9
 $pyenv rehash
-$ pyenv virtualenv 2.7.9 2.7.9env
-$ pyenv activate 2.7.9env
+$pyenv virtualenv 2.7.9 odooenv
+$pyenv activate odooenv
 
  #$sudo -H pip install --upgrade pip
 install --upgrade pip
 $wget https://raw.githubusercontent.com/odoo/odoo/10.0/requirements.txt
  #$sudo -H pip install -r requirements.txt
 pip install -r requirements.txt
+
 ## 2. install Odoo
 ### installing from Odoo source code
  #$ sudo su odoo
@@ -56,19 +57,64 @@ $sudo chown odoo /var/log/odoo
 
 #### configuring important parameters in odoo.conf
 [options]
-addons_path = /home/odoo/odoo-10.0/odoo/addons,/home/odoo/odoo-10.0/addons
+addons_path = /home/odoo/odoo-10.0/odoo/addons,/home/odoo/odoo-10.0/addons,/home
+/odoo/odoo-10.0/custom_addons
 admin_passwd = False
-db_user = odoo-prod
+csv_internal_sep = ,
+data_dir = /home/odoo/.local/share/Odoo
+db_host = 127.0.0.1
+db_maxconn = 64
+db_name = odoo-prod
+db_password = odoo
+db_port = 5432
+db_template = template1
+db_user = odoo     
 dbfilter = ^odoo-prod$
+demo = {}
+email_from = False
+geoip_database = /usr/share/GeoIP/GeoLiteCity.dat
+import_partial =
+limit_memory_hard = 2684354560
+limit_memory_soft = 2147483648
+limit_request = 8192
+limit_time_cpu = 60
+limit_time_real = 120
+limit_time_real_cron = -1
+list_db = True
+log_db = False
+log_db_level = warning
+log_handler = :INFO
+log_level = info
 logfile = /var/log/odoo/odoo-prod.log
+logrotate = True
+longpolling_port = 8072
+max_cron_threads = 2
+osv_memory_age_limit = 1.0
+osv_memory_count_limit = False
+pg_path = None
+pidfile = None
 proxy_mode = True
+reportgz = False
+server_wide_modules = web,web_kanban
+smtp_password = False
+smtp_port = 25
+smtp_server = localhost
+smtp_ssl = False
+smtp_user = False
+syslog = False
+test_commit = False
+test_enable = False
+test_file = False
+test_report_directory = False
+translate_modules = ['all']
+unaccent = False
 without_demo = True
-workers = 3  #setting it to 1+2*P, where P is the number of processors. 
+workers = 3
+xmlrpc = True
+xmlrpc_interface =
 xmlrpc_port = 8069
-#data_dir
-#xmlrpc-interface
 
-$sudo su -c "~/odoo-10.0/odoo-bin -c /etc/odoo/odoo.conf" 
+$~/odoo-10.0/odoo-bin -c /etc/odoo/odoo.conf &
 
 ## 3. setting up odoo server as a  system service
 ###  on ubuntu 16.04
