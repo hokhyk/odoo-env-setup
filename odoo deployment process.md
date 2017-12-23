@@ -30,14 +30,14 @@ $pyenv rehash
 $ pyenv virtualenv 2.7.9 2.7.9env
 $ pyenv activate 2.7.9env
 
-#$sudo -H pip install --upgrade pip
+ #$sudo -H pip install --upgrade pip
 install --upgrade pip
 $wget https://raw.githubusercontent.com/odoo/odoo/10.0/requirements.txt
-#$sudo -H pip install -r requirements.txt
+ #$sudo -H pip install -r requirements.txt
 pip install -r requirements.txt
 ## 2. install Odoo
 ### installing from Odoo source code
-#$ sudo su odoo
+ #$ sudo su odoo
 $ git clone https://github.com/odoo/odoo.git /home/odoo/odoo-10.0 -b 10.0 --depth=1
 
  # $ wget https://bootstrap.pypa.io/ez_setup.py -O - |sudo  python
@@ -45,7 +45,8 @@ $/home/odoo/odoo-10.0/odoo-bin --help
 $exit
 
 ### setting up the configuration file
-$sudo su -c "~/odoo-10.0/odoo-bin -d odoo-prod --save --stop-after-init" 
+ # $sudo su  -c "~/odoo-10.0/odoo-bin -d odoo-prod --save --stop-after-init" 
+$~/odoo-10.0/odoo-bin -d odoo-prod --save --stop-after-init
 $sudo mkdir /etc/odoo
 $sudo cp /home/odoo/.odoorc /etc/odoo/odoo.conf
 $sudo chown -R odoo /etc/odoo
