@@ -34,7 +34,15 @@ Python正则表达式
 
 ^:模式取非。
 
- 
+在Python的正则表达式中，有一个参数为re.S。它表示“.”（不包含外侧双引号，下同）的作用扩展到整个字符串，包括“\n”。
+ 正则表达式中，“.”的作用是匹配除“\n”以外的任何字符，也就是说，它是在一行中进行匹配。这里的“行”是以“\n”进行区分的。使用re.S参数以后，正则表达式会将这个字符串作为一个整体，将“\n”当做一个普通的字符加入到这个字符串中，在整体中进行匹配。
+
+在re.py库的介绍中有以下语句：
+
+"." Matches any character except a newline.
+
+S DOTALL "." matches any character at all, including the newline.
+
 
 常用方法：
 
