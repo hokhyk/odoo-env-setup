@@ -53,7 +53,7 @@ def application_unproxied(environ, start_response):
 
 
 
-
+# odoo.service.wsgi_server.application()
 def application(environ, start_response):
     if config['proxy_mode'] and 'HTTP_X_FORWARDED_HOST' in environ:
         return werkzeug.contrib.fixers.ProxyFix(application_unproxied)(environ, start_response)
@@ -62,4 +62,32 @@ def application(environ, start_response):
 
 
 
+# odoo.http.dispatch_rpc()
+def dispatch_rpc(service_name, method, params):
+    """ Handle a RPC call.
 
+    This is pure Python code, the actual marshalling (from/to XML-RPC) is done
+    in a upper layer.
+    """
+    try:
+        rpc_request_flag = rpc_request.isEnabledFor(logging.DEBUG)
+        rpc_response_flag = rpc_response.isEnabledFor(logging.DEBUG)
+        if rpc_request_flag or rpc_response_flag:
+            start_time = time.time()
+            start_rss, start_vms = 0, 0
+            if psutil:
+                start_rss, start_vms = memory_info(psutil.Process(os.getpid()))
+            if rpc_request and rpc_response_flag:
+                odoo.netsvc.log(rpc_request, logging.DEBUG, '%s.%s' % (service_name, method), replace_request_password(params))
+
+        threading.current_thread().uid = None
+        threading.current_thread().dbname = None
+        if service_name == 'common':
+            dispatch = odoo.service.common.dispatch
+        elif service_name == 'db':
+            dispatch = odoo.service.db.dispatch
+        elif service_name == 'object':
+            dispatch = odoo.service.model.dispatch
+        elif service_name == 'report':
+            dispatch = odoo.service.report.dispatch
+        result = dispatch(method, params)
