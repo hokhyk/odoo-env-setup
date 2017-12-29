@@ -1094,3 +1094,8 @@ value1 value1
 True
 
 可以看到obj1和obj2是同一个实例。
+
+# odoo web controller, routes
+/home/vagrant/share/odoo-dev/addons/web/controllers/main.py
+
+
