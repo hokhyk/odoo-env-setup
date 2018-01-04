@@ -1,3 +1,5 @@
+Python技巧：元类（Metaclasses）和利用Type构建的动态类（Dynamic Classes）
+
 `metaclass`和`type`关键字在Python代码中较少被使用（也正因如此，它们的作用也没有很好的被理解）。在这篇文章中，我们将探究`type()`的类型（types）和跟`metaclasses`相关的`type`的用法。
 
 
