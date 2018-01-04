@@ -1001,12 +1001,7 @@ class PositiveInteger(int):
 
 i = PositiveInteger(-3)
 print i
-1
-2
-3
-4
-5
-6
+
 	
 class PositiveInteger(int):
     def __init__(self, value):
