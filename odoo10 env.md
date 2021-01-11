@@ -53,7 +53,7 @@ $psql
 postgres=# \password postgres
 Enter new password:  postgres
 Enter it again: postgres
-postgres=# 
+postgres=#  \q
 创建odoo数据库用户：
 sudo su - postgres -c "createuser -s odoo"
 sudo su - postgres
@@ -70,16 +70,22 @@ $createuser --createdb  --username postgres --no-createrole --no-superuser --pwp
 $exit
 )
 
+
+设置locales:
+sudo apt-get install -y locales
+sudo dpkg-reconfigure locales
+
+echo -e "\n---- Set locales ----"
+echo 'LC_ALL=C.UTF-8' >> /etc/environment
+
 安装Odoo源码：
 # apt-get update && apt-get upgrade # Install system updates
 # apt-get install sudo # Make sure 'sudo' is installed
 
-# useradd -m -g sudo -s /bin/bash odoo # Create an 'odoo' user
-with sudo powers
+# useradd -m -g sudo -s /bin/bash odoo # Create an 'odoo' user with sudo powers
 # passwd odoo # Ask and set a password for the new user
 
-$ sudo apt-get update && sudo apt-get upgrade #Install system
-updates
+$ sudo apt-get update && sudo apt-get upgrade #Install system updates
 $ sudo apt-get install git # Install Git
 
 mkdir ~/odoo-dev # Create a directory to work in
