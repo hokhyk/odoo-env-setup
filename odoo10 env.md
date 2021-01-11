@@ -75,8 +75,9 @@ $exit
 sudo apt-get install -y locales
 sudo dpkg-reconfigure locales
 
-echo -e "\n---- Set locales ----"
-echo 'LC_ALL=C.UTF-8' >> /etc/environment
+sudo su odoo
+createdb $USER
+
 
 安装Odoo源码：
 # apt-get update && apt-get upgrade # Install system updates
